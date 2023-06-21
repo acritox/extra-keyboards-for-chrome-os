@@ -787,7 +787,7 @@ function parseUnicodeSym(sym) {
  * @return {{key: string, location: number}}
  */
 function symToEvent(sym) {
-  let location = KeyboardEvent.DOM_KEY_LOCATION_STANDARD;
+  let location = 0 /* KeyboardEvent.DOM_KEY_LOCATION_STANDARD */;
   let key = parseUnicodeSym(sym);
   if (key) {
     // ⚠ BUG: The spec requires key strings to be NFC-normalized strings
@@ -818,13 +818,13 @@ function symToEvent(sym) {
 
   key = sym
   if (key.startsWith('KP_')) {
-    location = KeyboardEvent.DOM_KEY_LOCATION_NUMPAD;
+    location = 3 /* KeyboardEvent.DOM_KEY_LOCATION_NUMPAD */;
     key = sym.substring(3);
   } else if (sym.endsWith('_L')) {
-    location = KeyboardEvent.DOM_KEY_LOCATION_LEFT;
+    location = 1 /* KeyboardEvent.DOM_KEY_LOCATION_LEFT */;
     key = sym.substring(0, sym.length-2);
   } else if (sym.endsWith('_R')) {
-    location = KeyboardEvent.DOM_KEY_LOCATION_RIGHT;
+    location = 2 /* KeyboardEvent.DOM_KEY_LOCATION_RIGHT */;
     key = sym.substring(0, sym.length-2);
   } else if (sym.endsWith('_Lock')) {
     key = sym.substring(0, sym.length-5) + 'Lock';
@@ -921,8 +921,8 @@ function eventToSyms(keyData) {
       case 'Alt':
       case 'Meta':
         location = keyData.code.endsWith('Right')
-          ? KeyboardEvent.DOM_KEY_LOCATION_RIGHT
-          : KeyboardEvent.DOM_KEY_LOCATION_LEFT;
+          ? 2 /* KeyboardEvent.DOM_KEY_LOCATION_RIGHT */
+          : 1 /* KeyboardEvent.DOM_KEY_LOCATION_LEFT */;
         break;
 
       case '0':
@@ -950,17 +950,17 @@ function eventToSyms(keyData) {
       case 'PageDown':
       case 'PageUp':
         location = keyData.code.startsWith('Numpad')
-          ? KeyboardEvent.DOM_KEY_LOCATION_NUMPAD
-          : KeyboardEvent.DOM_KEY_LOCATION_STANDARD;
+          ? 3 /* KeyboardEvent.DOM_KEY_LOCATION_NUMPAD */
+          : 0 /* KeyboardEvent.DOM_KEY_LOCATION_STANDARD */;
         break;
 
       default:
-        location = KeyboardEvent.DOM_KEY_LOCATION_STANDARD;
+        location = 0 /* KeyboardEvent.DOM_KEY_LOCATION_STANDARD */;
     }
   }
 
   if (key == 'Enter'
-      && location == KeyboardEvent.DOM_KEY_LOCATION_NUMPAD) {
+      && location == 3 /* KeyboardEvent.DOM_KEY_LOCATION_NUMPAD */) {
     // Numpad syms are usually the standard sym with a KP_ prefix, but numpad
     // Enter corresponds to KP_Enter, whereas standard Enter corresponds to
     // Return.
@@ -989,13 +989,13 @@ function eventToSyms(keyData) {
     return [sym.substring(0, sym.length-4) + '_Lock'];
   }
   switch (location) {
-  case KeyboardEvent.DOM_KEY_LOCATION_STANDARD:
+  case 0 /* KeyboardEvent.DOM_KEY_LOCATION_STANDARD */:
     return [sym];
-  case KeyboardEvent.DOM_KEY_LOCATION_RIGHT:
+  case 2 /* KeyboardEvent.DOM_KEY_LOCATION_RIGHT */:
     return [sym + '_R'];
-  case KeyboardEvent.DOM_KEY_LOCATION_LEFT:
+  case 1 /* KeyboardEvent.DOM_KEY_LOCATION_LEFT */:
     return [sym + '_L'];
-  case KeyboardEvent.DOM_KEY_LOCATION_NUMPAD:
+  case 3 /* KeyboardEvent.DOM_KEY_LOCATION_NUMPAD */:
     return ['KP_' + sym];
   default:
     throw new Error('unexpected keyboard location: ' + location);
@@ -1238,7 +1238,7 @@ function addBuiltinSequences(root) {
     for (const key of seq) {
       let syms = eventToSyms({
         key: key,
-        location: KeyboardEvent.DOM_KEY_LOCATION_STANDARD,
+        location: 0 /* KeyboardEvent.DOM_KEY_LOCATION_STANDARD */,
       });
       for (const sym of syms) {
         events.push({mods: modifiersAny, sym: sym});
