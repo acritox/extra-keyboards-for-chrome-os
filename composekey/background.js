@@ -1426,23 +1426,17 @@ function parseComposeFile(composeFile) {
  * The JavaScript key code to use for the Compose key.
  * @type {?string}
  */
-var composeKey = localStorage.getItem('key');
+var composeKey = 'AltRight';
 /**
  * If true (the default) and composeKey is set to a modifier, retain the
  * modifier's original behavior.
  * @type {?boolean}
  */
-var keepModifier = localStorage.getItem('keepModifier') == "true";
+var keepModifier = true;
 
 function setKey(settings) {
   composeKey = settings.key;
   keepModifier = settings.keepModifier;
-  localStorage.setItem('key', settings.key);
-  if (settings.keepModifier) {
-    localStorage.setItem('keepModifier', "true");
-  } else {
-    localStorage.removeItem('keepModifier');
-  }
   resetState();
   console.log('set key to ', settings);
 }
@@ -1530,13 +1524,8 @@ function storeComposeFile(content) {
 
     console.warn('Failed to store compose file to Chrome sync:',
                   chrome.runtime.lastError);
-    localStorage.setItem('composeFile', content);
-    console.log('Stored compose file to local storage (%d characters).',
-                lengthInCodepoints(content));
 
-    // Remove the previous compose file, if any, from storage. If the new
-    // compose file is too large to sync, we want to fall back to local copies
-    // instead of loading an outdated configuration from sync.
+    // Remove the previous compose file, if any, from storage.
     chrome.storage.sync.remove('composeFile', () => {
       if (chrome.runtime.lastError) {
         console.warn('Failed to remove stored compose file from Chrome sync:',
@@ -1547,7 +1536,6 @@ function storeComposeFile(content) {
 }
 
 function clearComposeFile() {
-  localStorage.removeItem('composeFile');
   chrome.storage.sync.remove('composeFile');
   setComposeFile(defaultComposeFile);
   console.log('Compose file reset to default.');
@@ -1556,36 +1544,14 @@ function clearComposeFile() {
 /** @type {function(string)} */
 var onComposeFileLoaded = null;
 
-function loadLocalComposeFile() {
-  let content = localStorage.getItem('composeFile');
-  if (content == null) {
+chrome.storage.sync.get('composeFile', (stored) => {
+  if (!stored.composeFile) {
     setComposeFile(defaultComposeFile);
   } else {
-    console.log('Loaded compose file from local storage (%d characters).',
-                lengthInCodepoints(content));
-    setComposeFile(content);
-  }
-
-  if (onComposeFileLoaded) {
-    onComposeFileLoaded(composeFile);
-  }
-}
-
-chrome.storage.sync.get('composeFile', (stored) => {
-  if (chrome.runtime.lastError) {
-    console.warn('Failed to load compose file from Chrome sync:',
-                  chrome.runtime.lastError);
-    loadLocalComposeFile();
-    return;
-  }
-  if (!stored.composeFile) {
-    loadLocalComposeFile();
-    return;
-  }
-
-  setComposeFile(stored.composeFile);
-  console.log('Loaded compose file from Chrome sync (%d characters).',
+    setComposeFile(stored.composeFile);
+    console.log('Loaded compose file from Chrome sync (%d characters).',
               lengthInCodepoints(composeFile));
+  }
 
   if (onComposeFileLoaded) {
     onComposeFileLoaded(composeFile);
