@@ -110,6 +110,14 @@
       "description": "Adds Compose key functionality to the US Workman keyboard.",
       "language": "en-GB",
       "layouts": ["gb(dvorak)"]
+    },
+    {
+      "name": "Compose Key (EurKEY)",
+      "type": "ime",
+      "id": "compose_key_eu",
+      "description": "Adds Compose key functionality to the EurKEY keyboard.",
+      "language": "en-US",
+      "layouts": ["eu"]
     }
   ],
   "options_ui": {
